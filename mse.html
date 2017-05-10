@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MSE Demo</title>
+</head>
+<body>
+    <h1>MSE Demo</h1>
+    <div>
+        <video controls width="80%"></video>
+    </div>
+    <script language="javascript" type="text/javascript" src="biginteger.js"></script>
+    <script type="text/javascript">
+    // ./ffmpeg -i rtmp://localhost:1935/eventialsTest/aaa -preset ultrafast -c:v copy -c:a copy -f mp4 -movflags empty_moov+omit_tfhd_offset+frag_keyframe+default_base_moof -reset_timestamps 1 -frag_duration 20000 tcp://177.153.19.46:8081
+
+    var buffer;
+    var websocket;
+
+    // Pre alloc buffer due updating delay
+    var buffer_size = 5*1024*1024;
+    var buffer_index = 0;
+    var frag_mp4_buffer = new Uint8Array(buffer_size);
+    var video = document.querySelector('video');
+    var mediaSource = new MediaSource();
+
+    mediaSource.addEventListener('sourceended', function(e) { console.log('sourceended: ' + mediaSource.readyState); });
+    mediaSource.addEventListener('sourceclose', function(e) { console.log('sourceclose: ' + mediaSource.readyState); });
+    mediaSource.addEventListener('error', function(e) { console.log('error: ' + mediaSource.readyState); });
+
+    video.src = window.URL.createObjectURL(mediaSource);
+
+    mediaSource.addEventListener('sourceopen', function(e) {
+        console.log('sourceopen: ' + mediaSource.readyState);
+
+        video.play();
+
+        buffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.640028, mp4a.40.2"');
+
+        var websocket = new WebSocket('ws://localhost:8082');
+        websocket.binaryType = 'arraybuffer';
+
+        websocket.addEventListener('message', function(e) {
+            var data = new Uint8Array(e.data);
+
+            if (data.length) {
+                if((buffer_index + data.length) <= buffer_size){
+                    frag_mp4_buffer.set(data, buffer_index);
+                    buffer_index = buffer_index + data.length;
+
+                    if (!buffer.updating) {
+                        var appended = frag_mp4_buffer.slice(0, buffer_index);
+                        buffer.appendBuffer(appended);
+                        frag_mp4_buffer.fill(0);
+                        buffer_index = 0;
+                    }
+                }
+            }
+        }, false);
+    }, false);
+    </script>
+</body>
+</html>
