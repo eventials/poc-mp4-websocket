@@ -46,7 +46,7 @@
                     frag_mp4_buffer.set(data, buffer_index);
                     buffer_index = buffer_index + data.length;
 
-                    if (!buffer.updating) {
+                    if (!buffer.updating && mediaSource.readyState == 'open') {
                         var appended = frag_mp4_buffer.slice(0, buffer_index);
                         buffer.appendBuffer(appended);
                         frag_mp4_buffer.fill(0);
