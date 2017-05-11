@@ -1,0 +1,23 @@
+{
+  "name": "poc-mp4-websocket",
+  "version": "1.0.0",
+  "description": "Proof of concept to demonstrate streaming with websockets.",
+  "main": "ws.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eventials/poc-mp4-websocket.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eventials/poc-mp4-websocket/issues"
+  },
+  "homepage": "https://github.com/eventials/poc-mp4-websocket#readme",
+  "dependencies": {
+    "big-integer": "^1.6.22",
+    "ws": "^2.3.1"
+  }
+}
