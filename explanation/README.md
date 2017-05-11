@@ -202,3 +202,31 @@ socketServer.on('connection', function(socket) {
 }
 ```
 
+## Escalando
+
+Ideis para escalar os servidores de Ffmpeg, Websocket.
+
+### Websocket
+
+O servidor de Websocket se bem implementando, sem regras de negócio complexas pode ser escalado horizontalmente com um servidor
+de websocket se conectando em outro como um usuário, tendo suas conexões balanceadas por um load balancer. O detalhe aqui, 
+talvez seja na métrica de quantos usuários estão conectados, acredito que este poderia ser um outro serviço com um inc e um dec, 
+sempre que um cliente é conectado ou desconectado.
+
+Levar em consideração que para facilitar o controle dos servidores, seja preciso ter um HUB, e que apenas o HUB receba 
+diretamente do FFmpeg o streaming.
+
+
+### Ffmpeg
+
+Pensar num farm de ffmpeg, controlado por uma API que receba um endpoint para onde o conteúdo do ffmpeg precisa ser enviado,
+um endereço TCP.
+
+### HUB
+
+Contem o controle de conexões TCP, e sabe para onde o endpoint x TCP deve enviar os dados para um servidor Y de Websocket.
+
+
+
+
+
