@@ -9,9 +9,8 @@
     <div>
         <video controls width="80%"></video>
     </div>
-    <script language="javascript" type="text/javascript" src="biginteger.js"></script>
     <script type="text/javascript">
-    // ./ffmpeg -i rtmp://localhost:1935/eventialsTest/aaa -preset ultrafast -c:v copy -c:a copy -f mp4 -movflags empty_moov+omit_tfhd_offset+frag_keyframe+default_base_moof -reset_timestamps 1 -frag_duration 20000 tcp://177.153.19.46:8081
+    // ./ffmpeg -i rtmp://localhost:1935/eventialsTest/aaa -preset ultrafast -c:v copy -c:a copy -f mp4 -movflags frag_keyframe+default_base_moof -reset_timestamps 1 -frag_duration 20000 tcp://177.153.19.46:8081
 
     var buffer;
     var websocket;

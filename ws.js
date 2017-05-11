@@ -40,7 +40,6 @@ function getUint64(data, offset){
 
 function parseMP4(dataView, offset, size)
 {
-    var frag = [];
     while (offset < size)
     {
         var len = dataView.getUint32(offset);
@@ -54,9 +53,7 @@ function parseMP4(dataView, offset, size)
 
         if (type === MP4_FTYP) {
             ftyp = new Uint8Array(dataView.buffer.slice(offset, len));
-        }
-
-        if (type === MP4_MOOV) {
+        } else if (type === MP4_MOOV) {
             moov = new Uint8Array(dataView.buffer.slice(offset, len));
 
             ftyp_moov = new Uint8Array(ftyp.length + moov.length);
@@ -68,14 +65,12 @@ function parseMP4(dataView, offset, size)
 
         offset = offset + len;
     }
-
-    return frag;
 }
 
 function initFragment(buffer) {
     var dataView = new DataView(buffer);
 
-    return parseMP4(dataView, 0, buffer.byteLength);
+    parseMP4(dataView, 0, buffer.byteLength);
 }
 
 // Websocket Server
