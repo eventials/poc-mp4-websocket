@@ -1,18 +1,9 @@
-// Example:
-// node websocket-relay 8081 8082
-// ffmpeg -i <some input> -f mpegts tcp://localhost:8081/
-
 var STREAM_PORT = process.argv[2] || 8081,
-	WEBSOCKET_PORT = process.argv[3] || 8082,
-	HOST = '127.0.0.1';
+    WEBSOCKET_PORT = process.argv[3] || 8082;
 
 var WebSocket = require('ws');
 var net = require('net');
 var bigInt = require("big-integer");
-
-// Keep track of the chat clients
-var clients = [];
-var completed = false;
 
 const MP4_FTYP = 1718909296;
 const MP4_MOOV = 1836019574;
@@ -22,8 +13,20 @@ var moov;
 var ftyp_moov;
 
 if (process.argv.length < 3) {
-	console.log('Usage: node ws.js [<stream-port> <websocket-port>]');
-	process.exit();
+    console.log('Usage: node ws.js [<stream-port> <websocket-port>]');
+    process.exit();
+}
+
+function binStringToHex2(s) {
+    var s2 = new Array(s.length), c;
+
+    for (var i = 0, l = s.length; i < l; ++i) {
+        c = s.charCodeAt(i);
+        s2[i * 2] = (c >> 4).toString(16);
+        s2[i * 2 + 1] = (c & 0xF).toString(16);
+    }
+
+    return String.prototype.concat.apply('', s2);
 }
 
 function getUint64(data, offset){
@@ -72,32 +75,34 @@ function initFragment(buffer) {
 var socketServer = new WebSocket.Server({port: WEBSOCKET_PORT, perMessageDeflate: false});
 
 socketServer.on('connection', function(socket) {
-	if (ftyp_moov) {
-        console.log('Send FTYP and MOOV.');
+    if (ftyp_moov) {
+        console.log('Websocket: Sending ftyp and moov segments to client.');
 
         socket.send(ftyp_moov);
     }
 });
 
 socketServer.broadcast = function(data) {
-	socketServer.clients.forEach(function each(client) {
-		if (client.readyState === WebSocket.OPEN) {
-			client.send(data);
-		}
-	});
+    socketServer.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(data);
+        }
+    });
 };
 
 // TCP Server
 net.createServer(function (socket) {
-	// Identify this client
-  	socket.name = socket.remoteAddress + ":" + socket.remotePort;
+    // Identify this client
+    socket.name = socket.remoteAddress + ":" + socket.remotePort;
 
-	socket.on('data', function (data) {
+    console.log('TCP: Receiving data from ', socket.name);
+
+    socket.on('data', function (data) {
         if (!moov) {
             initFragment(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
         }
-    	socketServer.broadcast(data);
-  	});
+        socketServer.broadcast(data);
+    });
 
     socket.on('close', function(code, message){
         ftyp_moov = undefined;
