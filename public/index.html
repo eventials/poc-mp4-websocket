@@ -34,7 +34,7 @@
 
         buffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.640028, mp4a.40.2"');
 
-        var websocket = new WebSocket('ws://localhost:8082');
+        var websocket = new WebSocket('ws://' + document.location.hostname +':8082');
         websocket.binaryType = 'arraybuffer';
 
         websocket.addEventListener('message', function(e) {
