@@ -34,6 +34,12 @@
 
         buffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.640028, mp4a.40.2"');
 
+        buffer.addEventListener('updateend', function(e) {
+            if (video.duration && !video.currentTime) {
+                video.currentTime = video.duration;
+            }
+        });
+
         var websocket = new WebSocket('ws://' + document.location.hostname +':8082');
         websocket.binaryType = 'arraybuffer';
 
@@ -57,13 +63,6 @@
             }
         }, false);
     }, false);
-
-    // to keep the seek bar 'always' at the end
-    setInterval(function() {
-        if (video.duration) {
-            video.currentTime = video.duration;
-        }
-    }, 1000);
     </script>
 </body>
 </html>
