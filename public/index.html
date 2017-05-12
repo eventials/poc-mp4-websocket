@@ -10,59 +10,68 @@
         <video controls width="80%"></video>
     </div>
     <script type="text/javascript">
+    function () {
+        var mime = 'video/mp4; codecs="avc1.640028, mp4a.40.2"';
 
-    var buffer;
-    var websocket;
+        if (!MediaSource.isTypeSupported(mime)) {
+            document.querySelector('h1').append(' - Unsuported mime type :(');
 
-    // Pre alloc buffer due updating delay
-    var buffer_size = 5*1024*1024;
-    var buffer_index = 0;
-    var frag_mp4_buffer = new Uint8Array(buffer_size);
-    var video = document.querySelector('video');
-    var mediaSource = new MediaSource();
+            return;
+        }
 
-    mediaSource.addEventListener('sourceended', function(e) { console.log('sourceended: ' + mediaSource.readyState); });
-    mediaSource.addEventListener('sourceclose', function(e) { console.log('sourceclose: ' + mediaSource.readyState); });
-    mediaSource.addEventListener('error', function(e) { console.log('error: ' + mediaSource.readyState); });
+        var buffer;
+        var websocket;
 
-    video.src = window.URL.createObjectURL(mediaSource);
+        // Pre alloc buffer due updating delay
+        var buffer_size = 5*1024*1024;
+        var buffer_index = 0;
+        var frag_mp4_buffer = new Uint8Array(buffer_size);
+        var video = document.querySelector('video');
+        var mediaSource = new MediaSource();
 
-    mediaSource.addEventListener('sourceopen', function(e) {
-        console.log('sourceopen: ' + mediaSource.readyState);
+        mediaSource.addEventListener('sourceended', function(e) { console.log('sourceended: ' + mediaSource.readyState); });
+        mediaSource.addEventListener('sourceclose', function(e) { console.log('sourceclose: ' + mediaSource.readyState); });
+        mediaSource.addEventListener('error', function(e) { console.log('error: ' + mediaSource.readyState); });
 
-        video.play();
+        video.src = window.URL.createObjectURL(mediaSource);
 
-        buffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.640028, mp4a.40.2"');
+        mediaSource.addEventListener('sourceopen', function(e) {
+            console.log('sourceopen: ' + mediaSource.readyState);
 
-        buffer.addEventListener('updateend', function(e) {
-            if (video.duration && !video.currentTime) {
-                video.currentTime = video.duration;
-            }
-        });
+            video.play();
 
-        var websocket = new WebSocket('ws://' + document.location.hostname +':8082');
-        websocket.binaryType = 'arraybuffer';
+            buffer = mediaSource.addSourceBuffer(mime);
 
-        websocket.addEventListener('message', function(e) {
-            var data = new Uint8Array(e.data);
+            buffer.addEventListener('updateend', function(e) {
+                if (video.duration && !video.currentTime) {
+                    video.currentTime = video.duration;
+                }
+            });
 
-            if (data.length) {
-                if((buffer_index + data.length) <= buffer_size){
-                    frag_mp4_buffer.set(data, buffer_index);
-                    buffer_index = buffer_index + data.length;
+            var websocket = new WebSocket('ws://' + document.location.hostname +':8082');
+            websocket.binaryType = 'arraybuffer';
 
-                    if (!buffer.updating && mediaSource.readyState == 'open') {
-                        var appended = frag_mp4_buffer.slice(0, buffer_index);
+            websocket.addEventListener('message', function(e) {
+                var data = new Uint8Array(e.data);
 
-                        buffer.appendBuffer(appended);
+                if (data.length) {
+                    if((buffer_index + data.length) <= buffer_size){
+                        frag_mp4_buffer.set(data, buffer_index);
+                        buffer_index = buffer_index + data.length;
 
-                        frag_mp4_buffer.fill(0);
-                        buffer_index = 0;
+                        if (!buffer.updating && mediaSource.readyState == 'open') {
+                            var appended = frag_mp4_buffer.slice(0, buffer_index);
+
+                            buffer.appendBuffer(appended);
+
+                            frag_mp4_buffer.fill(0);
+                            buffer_index = 0;
+                        }
                     }
                 }
-            }
+            }, false);
         }, false);
-    }, false);
+    }();
     </script>
 </body>
 </html>
