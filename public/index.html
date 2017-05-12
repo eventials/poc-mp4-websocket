@@ -10,7 +10,7 @@
         <video controls width="80%"></video>
     </div>
     <script type="text/javascript">
-    function () {
+    (function () {
         var mime = 'video/mp4; codecs="avc1.640028, mp4a.40.2"';
 
         if (!MediaSource.isTypeSupported(mime)) {
@@ -71,7 +71,7 @@
                 }
             }, false);
         }, false);
-    }();
+    })();
     </script>
 </body>
 </html>
