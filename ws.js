@@ -10,7 +10,6 @@ const MP4_MOOV = 1836019574;
 
 var ftyp;
 var moov;
-var ftyp_moov;
 
 if (process.argv.length < 3) {
     console.log('Usage: node ws.js [<stream-port> <websocket-port>]');
@@ -53,11 +52,6 @@ function parseMP4(dataView, offset, size)
             ftyp = new Uint8Array(dataView.buffer.slice(offset, len));
         } else if (type === MP4_MOOV) {
             moov = new Uint8Array(dataView.buffer.slice(offset, len));
-
-            ftyp_moov = new Uint8Array(ftyp.length + moov.length);
-            ftyp_moov.set(ftyp, 0);
-            ftyp_moov.set(moov, ftyp.length);
-
             break;
         }
 
@@ -75,8 +69,12 @@ function initFragment(buffer) {
 var socketServer = new WebSocket.Server({port: WEBSOCKET_PORT, perMessageDeflate: false});
 
 socketServer.on('connection', function(socket) {
-    if (ftyp_moov) {
+    if (moov) {
         console.log('Websocket: Sending ftyp and moov segments to client.');
+
+        var ftyp_moov = new Uint8Array(ftyp.length + moov.length);
+        ftyp_moov.set(ftyp, 0);
+        ftyp_moov.set(moov, ftyp.length);
 
         socket.send(ftyp_moov);
     }
@@ -105,7 +103,7 @@ net.createServer(function (socket) {
     });
 
     socket.on('close', function(code, message){
-        ftyp_moov = undefined;
+        moov = undefined;
     });
 
 }).listen(STREAM_PORT);
