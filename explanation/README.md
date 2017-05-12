@@ -1,4 +1,21 @@
-Meu objetivo com esse documento é mostrar os principais pontos para que funcione o streaming utilizando **MP4**, **Websockets** e **FFmpeg**.
+Um dos problemas atuais de streaming de vídeo, é a latencencia. Sabemos que ficar fazendo pooling no client para receber os segmentos do streaming
+pode não ser a melhor escolha contra a latencia, e por isso optamos por tentar utilizar Websockets para enviar pedaços do streaming ao browser.
+
+O browser precisa ser capaz de processar esses bytes recebidos do Websocket, achei o [JSMpeg](https://github.com/phoboslab/jsmpeg) que faz exatamente isso,
+utilizando segmentos .ts. O problema desse projeto é que ele utiliza [MPEG-1](https://en.wikipedia.org/wiki/MPEG-1) e faz o decoding utilizando JavaScript,
+limitando a qualidade do vídeo.
+
+Precisamos que o decoding do vídeo seja feito utilizando Media Source Extensions, a maioria dos browsers atuais tem essa especificação implementada, e é utilizada
+por outros projetos como hls.js e dash.js.
+
+Estudamos enviar o vídeo h264 e o áudio AAC através do container MPEG-TS, eu não obtive sucesso utilizando essa forma, pelo que entendi seria necessário fazer transmux do conteúdo
+no javacript, separando o vídeo, audio, etc do container, tem um custo de processamento e consequentemetne gerando latencia.
+
+Estudando mais um pouco (lendo a especificação do Media Source Extensions), vi que é possível enviar segmentos do MP4 utilizando BMFF, sem precisa fazer qualquer manipulação via JavaScript.
+
+Como resultado, a maior parte da latência está no encoding do usuário (obs, ffmpeg, etc) e decoding do browser. Obtive em média um streaming com 4 segundos de delay.
+
+Nos tópicos abaixo explico como fazer funcionar o straming utilizando Websocket + MP4 + BMFF.
 
 A documentação completa do **Media Source Extensions** está em [W3C](https://www.w3.org/TR/media-source/).
 
