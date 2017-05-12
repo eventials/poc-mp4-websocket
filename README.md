@@ -30,4 +30,4 @@ Streaming screen and audio to node.js server:
 
 `ffmpeg -f avfoundation -i "<video_index>:<audio_index>" -c:a aac -ab 64k -c:v libx264 -vb 448k -vsync 2 -pix_fmt yuv420p -profile:v high -f mp4 -movflags frag_keyframe+default_base_moof -reset_timestamps 1 -frag_duration 70000 tcp://localhost:8081/`
 
-Now, if everything went well, open `http://localhost:8000/mse.html` and move player position to end.
+Now, if everything went well, open `http://localhost:8000/`.
