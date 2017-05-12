@@ -22,10 +22,7 @@ var moov;
 var ftyp_moov;
 
 if (process.argv.length < 3) {
-	console.log(
-		'Usage: \n' +
-		'node websocket-relay.js [<stream-port> <websocket-port>]'
-	);
+	console.log('Usage: node ws.js [<stream-port> <websocket-port>]');
 	process.exit();
 }
 
@@ -33,9 +30,7 @@ function getUint64(data, offset){
     var dat = data.getUTF8String(offset, 8);
     var str = '0x' + binStringToHex2(dat);
 
-    // Using BigInteger
-    var n1 = bigInt(str);
-    return n1
+    return bigInt(str);
 }
 
 function parseMP4(dataView, offset, size)
@@ -75,23 +70,9 @@ function initFragment(buffer) {
 
 // Websocket Server
 var socketServer = new WebSocket.Server({port: WEBSOCKET_PORT, perMessageDeflate: false});
-socketServer.connectionCount = 0;
-socketServer.on('connection', function(socket) {
-	socketServer.connectionCount++;
-	console.log(
-		'New WebSocket Connection: ', 
-		socket.upgradeReq.socket.remoteAddress,
-		socket.upgradeReq.headers['user-agent'],
-		'('+socketServer.connectionCount+' total)'
-	);
-	socket.on('close', function(code, message){
-		socketServer.connectionCount--;
-		console.log(
-			'Disconnected WebSocket ('+socketServer.connectionCount+' total)'
-		);
-	});
 
-    if (ftyp_moov) {
+socketServer.on('connection', function(socket) {
+	if (ftyp_moov) {
         console.log('Send FTYP and MOOV.');
 
         socket.send(ftyp_moov);
@@ -106,6 +87,7 @@ socketServer.broadcast = function(data) {
 	});
 };
 
+// TCP Server
 net.createServer(function (socket) {
 	// Identify this client
   	socket.name = socket.remoteAddress + ":" + socket.remotePort;
@@ -123,5 +105,5 @@ net.createServer(function (socket) {
 
 }).listen(STREAM_PORT);
 
-console.log('Listening for incomming MP4 Stream on tcp://127.0.0.1:'+STREAM_PORT+'/');
-console.log('Awaiting WebSocket connections on ws://127.0.0.1:'+WEBSOCKET_PORT+'/');
+console.log('Listening for incomming MP4 Stream on tcp://127.0.0.1:' + STREAM_PORT + '/');
+console.log('Awaiting WebSocket connections on ws://127.0.0.1:' + WEBSOCKET_PORT + '/');

@@ -10,7 +10,6 @@
         <video controls width="80%"></video>
     </div>
     <script type="text/javascript">
-    // ./ffmpeg -i rtmp://localhost:1935/eventialsTest/aaa -preset ultrafast -c:v copy -c:a copy -f mp4 -movflags frag_keyframe+default_base_moof -reset_timestamps 1 -frag_duration 20000 tcp://177.153.19.46:8081
 
     var buffer;
     var websocket;
@@ -48,7 +47,9 @@
 
                     if (!buffer.updating && mediaSource.readyState == 'open') {
                         var appended = frag_mp4_buffer.slice(0, buffer_index);
+
                         buffer.appendBuffer(appended);
+
                         frag_mp4_buffer.fill(0);
                         buffer_index = 0;
                     }
@@ -56,6 +57,13 @@
             }
         }, false);
     }, false);
+
+    // to keep the seek bar 'always' at the end
+    setInterval(function() {
+        if (video.duration) {
+            video.currentTime = video.duration;
+        }
+    }, 1000);
     </script>
 </body>
 </html>

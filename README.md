@@ -4,13 +4,9 @@ Proof of concept to demonstrate streaming with websockets.
 
 ## Install
 
-`mkdir poc-mp4-websocket && git clone git@github.com:eventials/poc-mp4-websocket.git ~/poc-mp4-websocket`
+Clone this repo, then run:
 
-`cd ~/poc-mp4-websocket`
-
-`npm install big-integer`
-
-`npm install ws`
+`npm install`
 
 ## Running
 
@@ -18,15 +14,11 @@ Proof of concept to demonstrate streaming with websockets.
 
 Media Source Extensions needs to run in a http server, just run:
 
-`cd ~/poc-mp4-websocket`
-
-`python3 -m http.server`
+`npm run http-server`
 
 #### On a second terminal:
 
-`cd ~/poc-mp4-websocket`
-
-`node ws.js 8081 8082`
+`npm run ws-server`
 
 #### On a third terminal:
 
