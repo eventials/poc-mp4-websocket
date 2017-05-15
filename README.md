@@ -2,6 +2,8 @@
 
 Proof of concept to demonstrate streaming with websockets.
 
+Actually, don't work with firefox and edge, needs more research.
+
 ## Install
 
 Clone this repo, then run:
